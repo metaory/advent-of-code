@@ -24,7 +24,7 @@ import alphabet from "alphabet";
 console.clear();
 const scores = [...alphabet.lower, ...alphabet.upper].reduce((acc, cur, i) => {
   acc[cur] = i + 1;
-  return acc;
+  return { ...acc };
 }, {});
 
 console.log("scores:", scores);
