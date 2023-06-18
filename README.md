@@ -9,7 +9,7 @@
 ### How to run JavaScript Solutions
 
     git clone git@github.com:metaory/advent-of-code.git
-    cd javascript
+    cd 2022/javascript
     npm install
 
     node index [day] <basic|input>
