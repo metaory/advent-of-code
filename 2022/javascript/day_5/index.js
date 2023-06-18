@@ -13,12 +13,12 @@ function render(matrix) {
   const str = matrix.reduce((acc, [x, y, c], i) => {
     if (y % length === 0) acc += `\n ${global.c.blue(i / length)}`;
     // if (y % length === 0) acc += `\n ${global.c.blue(length - i / length - 1)}`;
-    acc += ` [${global.c.green(c)}] `;
+    acc += ` [${global.c.green(c)}]`;
     return acc;
   }, "");
   const axis = Array.from({ length })
     .map((x, i) => i)
-    .join("    ");
+    .join("   ");
   process.stdout.write(`${str}\n ⸤  ${global.c.blue(axis)}\n`);
   return str;
 }
