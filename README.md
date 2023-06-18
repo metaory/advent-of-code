@@ -21,4 +21,5 @@ Examples:
     node index day_1 # run day 1 with prompt for input type
     node index day_2 basic # run day 2 with basic input
     node index day_3 input # run day 3 with complete input
+    node index day_4b input # run day 3 B with complete input
 ```

@@ -18,17 +18,19 @@ global.h = (str, char = "━") => {
   process.stdout.write("\n\n");
 };
 
-const startTime = performance.now();
+const days = (await readdir("./")).filter((x) => x.startsWith("day_"));
 
-const [, , day, arg] = process.argv;
-let _day = day;
-if (!day) {
-  const days = (await readdir("./")).filter((x) => x.startsWith("day_"));
-  const answer = await select({
+const [, , _day, arg] = process.argv;
+const day =
+  _day ||
+  (await select({
     message: "Select a day",
     choices: days.map((x) => ({ value: x, description: `Solutions Day ${x}` })),
-  });
-  _day = answer;
+  }));
+
+if (!days.includes(day) && !day.endsWith("b")) {
+  console.error(global.c.yellow(day), "doesnt exist");
+  process.exit(1);
 }
 
 const inputType =
@@ -41,13 +43,15 @@ const inputType =
     ],
   }));
 
-const dayPath = _day.endsWith("b") ? _day.substring(0, day.length - 1) : _day;
+const dayPath = day.endsWith("b") ? day.substring(0, day.length - 1) : day;
 
 global.data = await readFile(`./${dayPath}/${inputType}.txt`, {
   encoding: "utf8",
 });
 
-const suffix = _day.endsWith("b") ? "-b" : "";
+const suffix = day.endsWith("b") ? "-b" : "";
+
+const startTime = performance.now();
 
 const file = await import(`./${dayPath}/index${suffix}.js`);
 
