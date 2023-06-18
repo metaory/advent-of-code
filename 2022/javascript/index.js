@@ -1,4 +1,4 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 // import select from "@inquirer/select";
 import select, { Separator } from "@inquirer/select";
 import chalk from "chalk";
@@ -10,7 +10,6 @@ const fill = (char = ".", length = process.stdout.columns) =>
   global.c.black(Array.from({ length }).fill(char).join(""));
 
 global.h = (str, char = "━") => {
-  if (!global.debug) return;
   const len = process.stdout.columns - str.length - 4;
   process.stdout.write("\n");
   process.stdout.write(`${fill(char, 2)} ${global.c.cyan(str)} `);
@@ -18,11 +17,28 @@ global.h = (str, char = "━") => {
   process.stdout.write("\n\n");
 };
 
-const days = (await readdir("./"))
+const checkFile = async (path) => {
+  try {
+    await stat(path);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+const days = await (
+  await readdir("./")
+)
   .filter((x) => x.startsWith("day_"))
-  .reduce((acc, cur) => {
-    acc.push(cur);
-    acc.push(`${cur}b`);
+  .reduce(async (acc, cur) => {
+    acc = await acc;
+
+    const aStat = await checkFile(`./${cur}/index.js`);
+    aStat && acc.push(cur);
+
+    const bStat = await checkFile(`./${cur}/index-b.js`);
+    bStat && acc.push(`${cur}-b`);
+
     return acc;
   }, []);
 
@@ -33,7 +49,6 @@ const day =
     message: "Select a day",
     choices: days.map((x) => ({ value: x, description: `Solutions Day ${x}` })),
   }));
-//
 
 if (days.includes(day) === false) {
   console.error(global.c.yellow(day), "doesnt exist");
@@ -50,9 +65,9 @@ const inputType =
     ],
   }));
 
-const dayPath = day.endsWith("b") ? day.substring(0, day.length - 1) : day;
+const [dayDir] = day.split("-");
 
-global.data = await readFile(`./${dayPath}/${inputType}.txt`, {
+global.data = await readFile(`./${dayDir}/${inputType}.txt`, {
   encoding: "utf8",
 });
 
@@ -60,9 +75,10 @@ const suffix = day.endsWith("b") ? "-b" : "";
 
 const startTime = performance.now();
 
-const file = await import(`./${dayPath}/index${suffix}.js`);
+const file = await import(`./${dayDir}/index${suffix}.js`);
+
+const endTime = Number((performance.now() - startTime).toFixed(1));
 
 global.h("  ", "╸");
 
-const endTime = Number((performance.now() - startTime).toFixed(1));
 console.log(global.c.grey(" ⏱ "), endTime, "ms");
