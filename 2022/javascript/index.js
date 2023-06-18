@@ -33,11 +33,9 @@ const days = await (
   .reduce(async (acc, cur) => {
     acc = await acc;
 
-    const aStat = await checkFile(`./${cur}/index.js`);
-    aStat && acc.push(cur);
+    (await checkFile(`./${cur}/index.js`)) && acc.push(cur);
 
-    const bStat = await checkFile(`./${cur}/index-b.js`);
-    bStat && acc.push(`${cur}-b`);
+    (await checkFile(`./${cur}/index-b.js`)) && acc.push(`${cur}-b`);
 
     return acc;
   }, []);
@@ -55,30 +53,41 @@ if (days.includes(day) === false) {
   process.exit(1);
 }
 
-const inputType =
+const [dayDir] = day.split("-");
+
+const inputs = (await readdir(`./${dayDir}`)).filter((x) => x.endsWith(".txt"));
+
+const input =
   arg ||
   (await select({
     message: "Select Input Type",
-    choices: [
-      { name: "basic", value: "basic", description: "basic input data" },
-      { name: "input", value: "input", description: "complete input data" },
-    ],
+    choices: inputs.map((x) => ({ value: x })),
   }));
 
-const [dayDir] = day.split("-");
+const dataPath = `./${dayDir}/${input}`;
 
-global.data = await readFile(`./${dayDir}/${inputType}.txt`, {
-  encoding: "utf8",
-});
+if ((await checkFile(dataPath)) === false) {
+  console.error(global.c.yellow(dataPath), "doesnt exist");
+  process.exit(1);
+}
+
+global.data = await readFile(dataPath, { encoding: "utf8" });
 
 const suffix = day.endsWith("b") ? "-b" : "";
 
+const filePath = `./${dayDir}/index${suffix}.js`;
+
+if ((await checkFile(filePath)) === false) {
+  console.error(global.c.yellow(filePath), "doesnt exist");
+  process.exit(1);
+}
+
 const startTime = performance.now();
 
-const file = await import(`./${dayDir}/index${suffix}.js`);
+await import(filePath);
 
 const endTime = Number((performance.now() - startTime).toFixed(1));
 
-global.h("  ", "╸");
+global.h("· · ·", "╸");
 
 console.log(global.c.grey(" ⏱ "), endTime, "ms");
