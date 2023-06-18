@@ -18,7 +18,13 @@ global.h = (str, char = "━") => {
   process.stdout.write("\n\n");
 };
 
-const days = (await readdir("./")).filter((x) => x.startsWith("day_"));
+const days = (await readdir("./"))
+  .filter((x) => x.startsWith("day_"))
+  .reduce((acc, cur) => {
+    acc.push(cur);
+    acc.push(`${cur}b`);
+    return acc;
+  }, []);
 
 const [, , _day, arg] = process.argv;
 const day =
@@ -27,8 +33,9 @@ const day =
     message: "Select a day",
     choices: days.map((x) => ({ value: x, description: `Solutions Day ${x}` })),
   }));
+//
 
-if (!days.includes(day) && !day.endsWith("b")) {
+if (days.includes(day) === false) {
   console.error(global.c.yellow(day), "doesnt exist");
   process.exit(1);
 }
