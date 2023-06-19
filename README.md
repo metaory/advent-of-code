@@ -14,7 +14,7 @@
 
     node index [day] <basic|input>
 
-Examples:
+### Examples
 
 ```bash
   node index # prompt day and input type
@@ -24,11 +24,11 @@ Examples:
   node index day_4b input # run day 4 B with complete input
 ```
 
-Scaffold:
+### Scaffold
 
 ```bash
 year=2022
-mkdir year 2> /dev/null
+mkdir $year 2> /dev/null
 for i in {1..10}; do
   mkdir ${year}/day-${i} &&
   echo "console.log('hello day ${i} !')" > ${year}/day-${i}/index.js &&
