@@ -6,6 +6,8 @@ import chalk from "chalk";
 global.c = chalk;
 global.debug = process.env["ENV"] === "debug";
 
+const [, , _year, _day, arg] = process.argv;
+
 const fill = (char = ".", length = process.stdout.columns) =>
   global.c.black(Array.from({ length }).fill(char).join(""));
 
@@ -26,26 +28,42 @@ const checkFile = async (path) => {
   }
 };
 
+const year =
+  _year ||
+  (await select({
+    message: "Select a year",
+    choices: (
+      await readdir("./")
+    )
+      .filter((x) => !isNaN(x))
+      .map((value) => ({
+        value,
+        description: `Solutions year ${value}`,
+      })),
+  }));
+
 const days = await (
-  await readdir("./")
+  await readdir(`./${year}/`)
 )
-  .filter((x) => x.startsWith("day_"))
+  .filter((x) => x.startsWith("day-"))
   .reduce(async (acc, cur) => {
     acc = await acc;
 
-    (await checkFile(`./${cur}/index.js`)) && acc.push(cur);
+    (await checkFile(`./${year}/${cur}/index.js`)) && acc.push(cur);
 
-    (await checkFile(`./${cur}/index-b.js`)) && acc.push(`${cur}-b`);
+    (await checkFile(`./${year}/${cur}/index-b.js`)) && acc.push(`${cur}b`);
 
     return acc;
   }, []);
 
-const [, , _day, arg] = process.argv;
 const day =
   _day ||
   (await select({
     message: "Select a day",
-    choices: days.map((x) => ({ value: x, description: `Solutions Day ${x}` })),
+    choices: days.map((value) => ({
+      value,
+      description: `Solutions Day ${value}`,
+    })),
   }));
 
 if (days.includes(day) === false) {
@@ -53,9 +71,11 @@ if (days.includes(day) === false) {
   process.exit(1);
 }
 
-const [dayDir] = day.split("-");
+const [dayDir] = day.split("b");
 
-const inputs = (await readdir(`./${dayDir}`)).filter((x) => x.endsWith(".txt"));
+const inputs = (await readdir(`./${year}/${dayDir}`)).filter(
+  (x) => !x.includes(".")
+);
 
 const input =
   arg ||
@@ -64,7 +84,7 @@ const input =
     choices: inputs.map((x) => ({ value: x })),
   }));
 
-const dataPath = `./${dayDir}/${input}`;
+const dataPath = `./${year}/${dayDir}/${input}`;
 
 if ((await checkFile(dataPath)) === false) {
   console.error(global.c.yellow(dataPath), "doesnt exist");
@@ -75,7 +95,7 @@ global.data = await readFile(dataPath, { encoding: "utf8" });
 
 const suffix = day.endsWith("b") ? "-b" : "";
 
-const filePath = `./${dayDir}/index${suffix}.js`;
+const filePath = `./${year}/${dayDir}/index${suffix}.js`;
 
 if ((await checkFile(filePath)) === false) {
   console.error(global.c.yellow(filePath), "doesnt exist");
