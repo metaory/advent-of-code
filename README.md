@@ -14,14 +14,14 @@
 
     node index [day] <basic|input>
 
-### Examples
+### Run a Solution
 
 ```bash
-  node index # prompt day and input type
-  node index day_1 # run day 1 with prompt for input type
-  node index day_2 basic # run day 2 with basic input
-  node index day_4 input # run day 4 with complete input
-  node index day_4b input # run day 4 B with complete input
+  node index # prompt year & day & input type
+  node index day_1 # prompt year & day & input type, run day 1
+  node index day_2 basic # prompt year & run day 2 with basic input
+  node index 2021 day_4 input # run year 2021 day 4 with complete input
+  node index 2022 day_4b input # run year 2022 day 4 B with complete input
 ```
 
 ### Scaffold
