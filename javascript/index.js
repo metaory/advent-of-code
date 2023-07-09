@@ -1,12 +1,15 @@
 import { readFile, readdir, stat } from "node:fs/promises";
-// import select from "@inquirer/select";
-import select, { Separator } from "@inquirer/select";
+import select from "@inquirer/select";
 import chalk from "chalk";
 
 global.c = chalk;
 global.debug = process.env["ENV"] === "debug";
 
 const [, , _year, _day, arg] = process.argv;
+const fileNotFound = (path) => {
+  console.error(global.c.yellow(path), global.c.red("doesnt exist"));
+  process.exit(1);
+};
 
 const fill = (char = ".", length = process.stdout.columns) =>
   global.c.black(Array.from({ length }).fill(char).join(""));
@@ -19,88 +22,41 @@ global.h = (str, char = "━") => {
   process.stdout.write("\n\n");
 };
 
-const checkFile = async (path) => {
-  try {
-    await stat(path);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
+const catchFileNotFound = (path) => stat(path).catch(fileNotFound);
 
-const year =
-  _year ||
-  (await select({
-    message: "Select a year",
-    choices: (
-      await readdir("./")
-    )
-      .filter((x) => !isNaN(x))
-      .map((value) => ({
-        value,
-        description: `Solutions year ${value}`,
-      })),
-  }));
+const prompt = (list, message) =>
+  select({ message, choices: list.map((value) => ({ value })) });
 
-const days = await (
-  await readdir(`./${year}/`)
-)
-  .filter((x) => x.startsWith("day-"))
-  .reduce(async (acc, cur) => {
-    acc = await acc;
+const years = (await readdir("./")).filter((x) => !isNaN(x));
 
-    (await checkFile(`./${year}/${cur}/index.js`)) && acc.push(cur);
+const year = _year || (await prompt(years, "Select a year"));
 
-    (await checkFile(`./${year}/${cur}/index-b.js`)) && acc.push(`${cur}b`);
+catchFileNotFound(`./${year}/`);
 
-    return acc;
-  }, []);
+const days = (await readdir(`./${year}/`)).filter((x) => x.startsWith("day-"));
 
-const day =
-  _day ||
-  (await select({
-    message: "Select a day",
-    choices: days.map((value) => ({
-      value,
-      description: `Solutions Day ${value}`,
-    })),
-  }));
+const day = _day || (await prompt(days, "Select a day"));
 
-if (days.includes(day) === false) {
-  console.error(global.c.yellow(day), "doesnt exist");
-  process.exit(1);
-}
+days.includes(day) || fileNotFound(day);
 
 const [dayDir] = day.split("b");
 
-const inputs = (await readdir(`./${year}/${dayDir}`)).filter(
-  (x) => !x.includes(".")
-);
+const dayPath = `./${year}/${dayDir}`;
+const inputs = (await readdir(dayPath)).filter((x) => !x.includes("."));
 
-const input =
-  arg ||
-  (await select({
-    message: "Select Input Type",
-    choices: inputs.map((x) => ({ value: x })),
-  }));
+const input = arg || (await prompt(inputs, "Select Input Type"));
 
 const dataPath = `./${year}/${dayDir}/${input}`;
-
-if ((await checkFile(dataPath)) === false) {
-  console.error(global.c.yellow(dataPath), "doesnt exist");
-  process.exit(1);
-}
+catchFileNotFound(dataPath);
 
 global.data = await readFile(dataPath, { encoding: "utf8" });
 
 const suffix = day.endsWith("b") ? "-b" : "";
 
 const filePath = `./${year}/${dayDir}/index${suffix}.js`;
+catchFileNotFound(filePath);
 
-if ((await checkFile(filePath)) === false) {
-  console.error(global.c.yellow(filePath), "doesnt exist");
-  process.exit(1);
-}
+process.stdout.write(global.data);
 
 const startTime = performance.now();
 
