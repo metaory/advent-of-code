@@ -6,6 +6,7 @@ global.c = chalk;
 global.debug = process.env["ENV"] === "debug";
 
 const [, , _year, _day, arg] = process.argv;
+const foo = ''
 const fileNotFound = (path) => {
   console.error(global.c.yellow(path), global.c.red("doesnt exist"));
   process.exit(1);
@@ -37,7 +38,7 @@ const days = (await readdir(`./${year}/`)).filter((x) => x.startsWith("day-"));
 
 const day = _day || (await prompt(days, "Select a day"));
 
-days.includes(day) || fileNotFound(day);
+// days.includes(day) || fileNotFound(day);
 
 const [dayDir] = day.split("b");
 

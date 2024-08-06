@@ -2,6 +2,7 @@ const matches = global.data.split("\n").filter((x) => x);
 console.log("matches:", matches);
 
 // const rules = [{ AX: "CZ" }, { BY: "AX" }, { CZ: "BY" }];
+const foo = ''
 const rules = { AX: "CZ", BY: "AX", CZ: "BY" };
 const ALIAS = { A: "X", B: "Y", C: "Z" };
 const alias = Object.keys(ALIAS).reduce((acc, cur) => {

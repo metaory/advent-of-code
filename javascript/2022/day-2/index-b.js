@@ -46,8 +46,6 @@ const scores = matches.reduce((acc, cur) => {
 
 console.log("scores:", scores);
 
-// rome-ignore lint/suspicious/noAssignInExpressions:
-// rome-ignore lint/style/noParameterAssign:
 const total = scores.reduce((acc, cur) => (acc += cur), 0);
 console.log("total:", total);
 
